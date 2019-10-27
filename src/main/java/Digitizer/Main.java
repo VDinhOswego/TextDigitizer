@@ -5,8 +5,14 @@
  */
 package Digitizer;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JFileChooser;
+import javax.swing.UnsupportedLookAndFeelException;
 
 /**
  *
@@ -95,7 +101,20 @@ public class Main extends javax.swing.JFrame {
     private void OpenActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_OpenActionPerformed
         if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
             File file = fileChooser.getSelectedFile();
-            textArea.setText(file.getAbsolutePath());
+            String t = "";
+            t += file.getAbsolutePath() + "\n";
+            Process p;
+            String line = "";
+            try {
+                p = Runtime.getRuntime().exec("python src/main/python/test.py");
+                BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
+                while ((line = r.readLine()) != null) {
+                    t += line + "\n";
+                }
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+            textArea.setText(t);
         } else {
             System.out.println("File access cancelled.");
         }
@@ -116,8 +135,16 @@ public class Main extends javax.swing.JFrame {
          */
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                if ("Windows".equals(info.getName())) {
+                    try {
+                        javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    } catch (UnsupportedLookAndFeelException e) {
+                        try {
+                            javax.swing.UIManager.setLookAndFeel(javax.swing.UIManager.getCrossPlatformLookAndFeelClassName());
+                        } catch (UnsupportedLookAndFeelException ex) {
+                            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                    }
                     break;
                 }
             }
@@ -127,9 +154,10 @@ public class Main extends javax.swing.JFrame {
             java.util.logging.Logger.getLogger(Main.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
             java.util.logging.Logger.getLogger(Main.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(Main.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
+        } 
+        //catch (javax.swing.UnsupportedLookAndFeelException ex) {
+        //    java.util.logging.Logger.getLogger(Main.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        //}
         //</editor-fold>
 
         /* Create and display the form */
