@@ -5,6 +5,7 @@
  */
 package Digitizer;
 
+import java.awt.Cursor;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -12,11 +13,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.swing.JFileChooser;
+import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
@@ -56,18 +57,19 @@ public class Main extends javax.swing.JFrame {
         helpContent = new javax.swing.JTextArea();
         helpHeading = new javax.swing.JLabel();
         noFile = new javax.swing.JDialog();
-        jScrollPane3 = new javax.swing.JScrollPane();
-        noFileText = new javax.swing.JTextArea();
         exitNoFileBut = new javax.swing.JButton();
+        noFileLabel = new javax.swing.JLabel();
         options = new javax.swing.JDialog();
         outputLabel = new javax.swing.JLabel();
         outputDirText = new javax.swing.JTextField();
         confirmOptions = new javax.swing.JButton();
         cancelOptions = new javax.swing.JButton();
-        jLabel1 = new javax.swing.JLabel();
+        typeLabel = new javax.swing.JLabel();
         txtRadio = new javax.swing.JRadioButton();
         pdfRadio = new javax.swing.JRadioButton();
+        outputBrowseButton = new javax.swing.JButton();
         outputTypeGroup = new javax.swing.ButtonGroup();
+        fileChooser1 = new javax.swing.JFileChooser();
         jScrollPane1 = new javax.swing.JScrollPane();
         textArea = new javax.swing.JTextArea();
         StartButton = new javax.swing.JButton();
@@ -80,7 +82,9 @@ public class Main extends javax.swing.JFrame {
         Help = new javax.swing.JMenu();
         HelpDoc = new javax.swing.JMenuItem();
 
+        fileChooser.setAcceptAllFileFilterUsed(false);
         fileChooser.setDialogTitle("");
+        fileChooser.setFileFilter(new FileNameExtensionFilter("Files", "jpg", "png", "pdf"));
         fileChooser.setFileSelectionMode(javax.swing.JFileChooser.FILES_AND_DIRECTORIES);
 
         helpBox.setTitle("Help Document");
@@ -96,9 +100,10 @@ public class Main extends javax.swing.JFrame {
         helpContent.setEditable(false);
         helpContent.setColumns(20);
         helpContent.setRows(5);
-        helpContent.setText("*Supported images files consist of JPEDGand PNG\n*Will read a single PDF\n*Selecting a directory will only read supported images file.");
+        helpContent.setText("*Supported images file types consist of JPEG and PNG\n*Will read a single PDF\n*Selecting a directory will only read supported image file types.\n*Output can be converted to a plain text file or pdf");
         jScrollPane2.setViewportView(helpContent);
 
+        helpHeading.setFont(new java.awt.Font("sansserif", 1, 18)); // NOI18N
         helpHeading.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         helpHeading.setText("Help");
 
@@ -131,22 +136,16 @@ public class Main extends javax.swing.JFrame {
         noFile.setTitle("No Filles Selected");
         noFile.setMinimumSize(new java.awt.Dimension(400, 180));
 
-        jScrollPane3.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        jScrollPane3.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
-
-        noFileText.setEditable(false);
-        noFileText.setColumns(20);
-        noFileText.setFont(new java.awt.Font("sansserif", 0, 24)); // NOI18N
-        noFileText.setRows(1);
-        noFileText.setText("No Files Selected");
-        jScrollPane3.setViewportView(noFileText);
-
         exitNoFileBut.setText("ok");
         exitNoFileBut.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 exitNoFileButActionPerformed(evt);
             }
         });
+
+        noFileLabel.setFont(new java.awt.Font("sansserif", 1, 36)); // NOI18N
+        noFileLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        noFileLabel.setText("No Files Selected");
 
         javax.swing.GroupLayout noFileLayout = new javax.swing.GroupLayout(noFile.getContentPane());
         noFile.getContentPane().setLayout(noFileLayout);
@@ -155,18 +154,18 @@ public class Main extends javax.swing.JFrame {
             .addGroup(noFileLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(noFileLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 388, Short.MAX_VALUE)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, noFileLayout.createSequentialGroup()
+                    .addGroup(noFileLayout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(exitNoFileBut)))
+                        .addComponent(exitNoFileBut))
+                    .addComponent(noFileLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         noFileLayout.setVerticalGroup(
             noFileLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(noFileLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 8, Short.MAX_VALUE)
+                .addComponent(noFileLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 49, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(exitNoFileBut)
                 .addContainerGap())
         );
@@ -174,9 +173,8 @@ public class Main extends javax.swing.JFrame {
         options.setTitle("Options");
         options.setMinimumSize(new java.awt.Dimension(400, 300));
 
+        outputLabel.setFont(new java.awt.Font("sansserif", 1, 12)); // NOI18N
         outputLabel.setText("Output Directory: ");
-
-        outputDirText.setText("./");
 
         confirmOptions.setText("Confirm");
         confirmOptions.addActionListener(new java.awt.event.ActionListener() {
@@ -192,7 +190,8 @@ public class Main extends javax.swing.JFrame {
             }
         });
 
-        jLabel1.setText("Output Type: ");
+        typeLabel.setFont(new java.awt.Font("sansserif", 1, 12)); // NOI18N
+        typeLabel.setText("Output Type: ");
 
         outputTypeGroup.add(txtRadio);
         txtRadio.setSelected(true);
@@ -203,6 +202,13 @@ public class Main extends javax.swing.JFrame {
         pdfRadio.setText("PDF");
         pdfRadio.setActionCommand("PDF");
 
+        outputBrowseButton.setText("Browse");
+        outputBrowseButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                outputBrowseButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout optionsLayout = new javax.swing.GroupLayout(options.getContentPane());
         options.getContentPane().setLayout(optionsLayout);
         optionsLayout.setHorizontalGroup(
@@ -211,21 +217,25 @@ public class Main extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(optionsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(optionsLayout.createSequentialGroup()
-                        .addComponent(outputLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(outputDirText))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, optionsLayout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(confirmOptions)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(cancelOptions))
-                    .addGroup(optionsLayout.createSequentialGroup()
-                        .addComponent(jLabel1)
+                        .addComponent(typeLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(txtRadio)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(pdfRadio)
-                        .addGap(0, 215, Short.MAX_VALUE)))
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, optionsLayout.createSequentialGroup()
+                        .addGroup(optionsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addGroup(optionsLayout.createSequentialGroup()
+                                .addComponent(outputLabel)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(outputDirText, javax.swing.GroupLayout.DEFAULT_SIZE, 207, Short.MAX_VALUE))
+                            .addGroup(optionsLayout.createSequentialGroup()
+                                .addGap(0, 0, Short.MAX_VALUE)
+                                .addComponent(confirmOptions)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(optionsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(cancelOptions)
+                            .addComponent(outputBrowseButton, javax.swing.GroupLayout.Alignment.TRAILING))))
                 .addContainerGap())
         );
         optionsLayout.setVerticalGroup(
@@ -234,18 +244,21 @@ public class Main extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(optionsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(outputLabel)
-                    .addComponent(outputDirText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(outputDirText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(outputBrowseButton))
+                .addGap(18, 18, 18)
                 .addGroup(optionsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel1)
+                    .addComponent(typeLabel)
                     .addComponent(txtRadio)
                     .addComponent(pdfRadio))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 208, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 196, Short.MAX_VALUE)
                 .addGroup(optionsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(cancelOptions)
                     .addComponent(confirmOptions))
                 .addContainerGap())
         );
+
+        fileChooser1.setFileSelectionMode(javax.swing.JFileChooser.DIRECTORIES_ONLY);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Text Digitizer");
@@ -317,7 +330,7 @@ public class Main extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 388, Short.MAX_VALUE)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                    .addGroup(layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
                         .addComponent(StartButton)))
                 .addContainerGap())
@@ -326,7 +339,7 @@ public class Main extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 231, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 231, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(StartButton)
                 .addContainerGap())
@@ -337,7 +350,7 @@ public class Main extends javax.swing.JFrame {
 
     ArrayList<String> files = new ArrayList<String>();
     ArrayList<File> flist = new ArrayList<File>();
-    
+
     private final String SCRIPT = "python src/main/python/ocr.py -f ";
     //python src/main/python/test.py
 
@@ -380,6 +393,7 @@ public class Main extends javax.swing.JFrame {
             noFile.setVisible(true);
             return;
         }
+        this.setCursor(new Cursor(Cursor.WAIT_CURSOR));
         for (int i = 0; i < files.size(); i++) {
             Process p;
             String line;
@@ -410,7 +424,7 @@ public class Main extends javax.swing.JFrame {
                             contentStream.beginText();
                             contentStream.setFont(PDType1Font.TIMES_ROMAN, 12);
                             contentStream.setLeading(14.5f);
-                            contentStream.newLineAtOffset(50, 700); 
+                            contentStream.newLineAtOffset(50, 700);
                             p = Runtime.getRuntime().exec(SCRIPT + images[j]);
                             BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
                             while ((line = r.readLine()) != null) {
@@ -422,7 +436,7 @@ public class Main extends javax.swing.JFrame {
                             contentStream.close();
                         }
                         document.save(outputDir + flist.get(i).getName().substring(0,
-                            flist.get(i).getName().lastIndexOf(".")) + ".pdf");
+                                flist.get(i).getName().lastIndexOf(".")) + ".pdf");
                         document.close();
                     }
                     //cleanTempImages(images);
@@ -450,7 +464,7 @@ public class Main extends javax.swing.JFrame {
                         contentStream.beginText();
                         contentStream.setFont(PDType1Font.TIMES_ROMAN, 12);
                         contentStream.setLeading(14.5f);
-                        contentStream.newLineAtOffset(50, 700); 
+                        contentStream.newLineAtOffset(50, 700);
                         while ((line = r.readLine()) != null) {
                             contentStream.showText(line);
                             contentStream.newLine();
@@ -459,7 +473,7 @@ public class Main extends javax.swing.JFrame {
                         contentStream.endText();
                         contentStream.close();
                         document.save(outputDir + flist.get(i).getName().substring(0,
-                            flist.get(i).getName().lastIndexOf(".")) + ".pdf");
+                                flist.get(i).getName().lastIndexOf(".")) + ".pdf");
                         document.close();
                     }
                 }
@@ -469,6 +483,7 @@ public class Main extends javax.swing.JFrame {
         }
         files = new ArrayList<String>();
         flist = new ArrayList<File>();
+        this.setCursor(Cursor.getDefaultCursor());
         textArea.setText(textArea.getText() + "Done!\n");
     }//GEN-LAST:event_StartButtonActionPerformed
 
@@ -489,6 +504,11 @@ public class Main extends javax.swing.JFrame {
 
     private void OptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_OptionsActionPerformed
         outputDirText.setText(outputDir);
+        if (outputType.equals("PDF")) {
+            pdfRadio.setSelected(true);
+        } else if (outputType.equals("Text")) {
+            txtRadio.setSelected(true);
+        }
         options.setVisible(true);
     }//GEN-LAST:event_OptionsActionPerformed
 
@@ -501,6 +521,14 @@ public class Main extends javax.swing.JFrame {
     private void cancelOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelOptionsActionPerformed
         options.setVisible(false);
     }//GEN-LAST:event_cancelOptionsActionPerformed
+
+    private void outputBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_outputBrowseButtonActionPerformed
+        if (fileChooser1.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+            outputDirText.setText(fileChooser1.getSelectedFile().getAbsolutePath());
+        } else {
+            System.out.println("File access cancelled.");
+        }
+    }//GEN-LAST:event_outputBrowseButtonActionPerformed
 
     private final String TEMPDIR = "temp/";
 
@@ -545,36 +573,19 @@ public class Main extends javax.swing.JFrame {
      * @param args the command line arguments
      */
     public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
+        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code">
         try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Windows".equals(info.getName())) {
-                    try {
-                        javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    } catch (UnsupportedLookAndFeelException e) {
-                        try {
-                            javax.swing.UIManager.setLookAndFeel(javax.swing.UIManager.getCrossPlatformLookAndFeelClassName());
-                        } catch (UnsupportedLookAndFeelException ex) {
-                            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-                        }
-                    }
-                    break;
-                }
-            }
+            // Set System L&F
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (UnsupportedLookAndFeelException ex) {
+            ex.printStackTrace();
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(Main.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            ex.printStackTrace();
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(Main.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            ex.printStackTrace();
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(Main.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            ex.printStackTrace();
         }
-        //catch (javax.swing.UnsupportedLookAndFeelException ex) {
-        //    java.util.logging.Logger.getLogger(Main.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        //}
         //</editor-fold>
 
         /* Create and display the form */
@@ -599,22 +610,23 @@ public class Main extends javax.swing.JFrame {
     private javax.swing.JButton exitDiaBut;
     private javax.swing.JButton exitNoFileBut;
     private javax.swing.JFileChooser fileChooser;
+    private javax.swing.JFileChooser fileChooser1;
     private javax.swing.JDialog helpBox;
     private javax.swing.JTextArea helpContent;
     private javax.swing.JLabel helpHeading;
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JDialog noFile;
-    private javax.swing.JTextArea noFileText;
+    private javax.swing.JLabel noFileLabel;
     private javax.swing.JDialog options;
+    private javax.swing.JButton outputBrowseButton;
     private javax.swing.JTextField outputDirText;
     private javax.swing.JLabel outputLabel;
     private javax.swing.ButtonGroup outputTypeGroup;
     private javax.swing.JRadioButton pdfRadio;
     private javax.swing.JTextArea textArea;
     private javax.swing.JRadioButton txtRadio;
+    private javax.swing.JLabel typeLabel;
     // End of variables declaration//GEN-END:variables
 }
