@@ -68,6 +68,8 @@ public class Main extends javax.swing.JFrame {
         txtRadio = new javax.swing.JRadioButton();
         pdfRadio = new javax.swing.JRadioButton();
         outputBrowseButton = new javax.swing.JButton();
+        outputMergeLabel = new javax.swing.JLabel();
+        outputMergeCheck = new javax.swing.JCheckBox();
         outputTypeGroup = new javax.swing.ButtonGroup();
         fileChooser1 = new javax.swing.JFileChooser();
         jScrollPane1 = new javax.swing.JScrollPane();
@@ -100,7 +102,7 @@ public class Main extends javax.swing.JFrame {
         helpContent.setEditable(false);
         helpContent.setColumns(20);
         helpContent.setRows(5);
-        helpContent.setText("*Supported images file types consist of JPEG and PNG\n*Will read a single PDF\n*Selecting a directory will only read supported image file types.\n*Output can be converted to a plain text file or pdf");
+        helpContent.setText("Open:\n-Supported images file types are JPEG and PNG.\n-Will read a single PDF file at a time.\n-Selecting a directory will only select images inside the directory.\n-Only multiple image files (no PDF's) at the same time.\n\nOptions:\n-The ouput location can be changed by selecting \"Browse\".\n-The output can be converted to a plain text file or PDF\n\nStart:\n-Click the Start button to start the conversions.\n-\"Done!\" will appear in the text area when the procees is done.");
         jScrollPane2.setViewportView(helpContent);
 
         helpHeading.setFont(new java.awt.Font("sansserif", 1, 18)); // NOI18N
@@ -127,7 +129,7 @@ public class Main extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(helpHeading, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 225, Short.MAX_VALUE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 233, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(exitDiaBut)
                 .addContainerGap())
@@ -171,7 +173,7 @@ public class Main extends javax.swing.JFrame {
         );
 
         options.setTitle("Options");
-        options.setMinimumSize(new java.awt.Dimension(400, 300));
+        options.setMinimumSize(new java.awt.Dimension(400, 190));
 
         outputLabel.setFont(new java.awt.Font("sansserif", 1, 12)); // NOI18N
         outputLabel.setText("Output Directory: ");
@@ -209,6 +211,11 @@ public class Main extends javax.swing.JFrame {
             }
         });
 
+        outputMergeLabel.setFont(new java.awt.Font("sansserif", 1, 12)); // NOI18N
+        outputMergeLabel.setText("Merge Output:");
+
+        outputMergeCheck.setText("On");
+
         javax.swing.GroupLayout optionsLayout = new javax.swing.GroupLayout(options.getContentPane());
         options.getContentPane().setLayout(optionsLayout);
         optionsLayout.setHorizontalGroup(
@@ -216,13 +223,6 @@ public class Main extends javax.swing.JFrame {
             .addGroup(optionsLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(optionsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(optionsLayout.createSequentialGroup()
-                        .addComponent(typeLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(txtRadio)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(pdfRadio)
-                        .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, optionsLayout.createSequentialGroup()
                         .addGroup(optionsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addGroup(optionsLayout.createSequentialGroup()
@@ -235,7 +235,20 @@ public class Main extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(optionsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(cancelOptions)
-                            .addComponent(outputBrowseButton, javax.swing.GroupLayout.Alignment.TRAILING))))
+                            .addComponent(outputBrowseButton, javax.swing.GroupLayout.Alignment.TRAILING)))
+                    .addGroup(optionsLayout.createSequentialGroup()
+                        .addGroup(optionsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(optionsLayout.createSequentialGroup()
+                                .addComponent(typeLabel)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(txtRadio)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(pdfRadio))
+                            .addGroup(optionsLayout.createSequentialGroup()
+                                .addComponent(outputMergeLabel)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(outputMergeCheck)))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         optionsLayout.setVerticalGroup(
@@ -251,7 +264,11 @@ public class Main extends javax.swing.JFrame {
                     .addComponent(typeLabel)
                     .addComponent(txtRadio)
                     .addComponent(pdfRadio))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 196, Short.MAX_VALUE)
+                .addGap(18, 18, 18)
+                .addGroup(optionsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(outputMergeLabel)
+                    .addComponent(outputMergeCheck))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(optionsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(cancelOptions)
                     .addComponent(confirmOptions))
@@ -348,12 +365,22 @@ public class Main extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    /**
+     * Lists of the sources
+     */
     ArrayList<String> files = new ArrayList<String>();
     ArrayList<File> flist = new ArrayList<File>();
 
+    /**
+     * Command Line string to run OCR script
+     */
     private final String SCRIPT = "python src/main/python/ocr.py -f ";
     //python src/main/python/test.py
 
+    /**
+     * Method to open the file chooser and populate source list
+     * @param evt event
+     */
     private void OpenActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_OpenActionPerformed
         if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
             File file = fileChooser.getSelectedFile();
@@ -384,10 +411,19 @@ public class Main extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_OpenActionPerformed
 
+    /**
+     * Closes the program
+     * @param evt event
+     */
     private void ExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ExitActionPerformed
         System.exit(0);
     }//GEN-LAST:event_ExitActionPerformed
 
+    /**
+     * Iterates though source list and runs the Python script on each
+     * then reads through the script's output and writes the output to a file.
+     * @param evt event
+     */
     private void StartButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_StartButtonActionPerformed
         if (files.isEmpty()) {
             noFile.setVisible(true);
@@ -481,27 +517,50 @@ public class Main extends javax.swing.JFrame {
                 ex.printStackTrace();
             }
         }
+        
+        //merge pdfs here
+        
         files = new ArrayList<String>();
         flist = new ArrayList<File>();
         this.setCursor(Cursor.getDefaultCursor());
         textArea.setText(textArea.getText() + "Done!\n");
     }//GEN-LAST:event_StartButtonActionPerformed
 
+    /**
+     * Opens the Help window
+     * @param evt event
+     */
     private void HelpDocActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_HelpDocActionPerformed
         helpBox.setVisible(true);
     }//GEN-LAST:event_HelpDocActionPerformed
 
+    /**
+     * Closes the Help window
+     * @param evt event
+     */
     private void exitDiaButActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitDiaButActionPerformed
         helpBox.setVisible(false);
     }//GEN-LAST:event_exitDiaButActionPerformed
 
+    /**
+     * Closes the no File alert
+     * @param evt event
+     */
     private void exitNoFileButActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitNoFileButActionPerformed
         noFile.setVisible(false);
     }//GEN-LAST:event_exitNoFileButActionPerformed
 
+    /**
+     * Variables representing the option values
+     */
     private String outputDir = "";
     private String outputType = "Text";
+    private boolean outputMerge = false;
 
+    /**
+     * Opens the options window and sets the current options
+     * @param evt event
+     */
     private void OptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_OptionsActionPerformed
         outputDirText.setText(outputDir);
         if (outputType.equals("PDF")) {
@@ -509,19 +568,34 @@ public class Main extends javax.swing.JFrame {
         } else if (outputType.equals("Text")) {
             txtRadio.setSelected(true);
         }
+        outputMergeCheck.setSelected(outputMerge);
         options.setVisible(true);
     }//GEN-LAST:event_OptionsActionPerformed
 
+    /**
+     * Applies the selected options and closes the Options window
+     * @param evt event
+     */
     private void confirmOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_confirmOptionsActionPerformed
         outputDir = outputDirText.getText();
         outputType = outputTypeGroup.getSelection().getActionCommand();
+        outputMerge = outputMergeCheck.isSelected();
         options.setVisible(false);
     }//GEN-LAST:event_confirmOptionsActionPerformed
 
+    /**
+     * Closes the Options window discarding selected options
+     * @param evt event
+     */
     private void cancelOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelOptionsActionPerformed
         options.setVisible(false);
     }//GEN-LAST:event_cancelOptionsActionPerformed
 
+    /**
+     * Opens a file chooser and sets the selected Directory as the output
+     * Directory
+     * @param evt event
+     */
     private void outputBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_outputBrowseButtonActionPerformed
         if (fileChooser1.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
             outputDirText.setText(fileChooser1.getSelectedFile().getAbsolutePath());
@@ -530,8 +604,16 @@ public class Main extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_outputBrowseButtonActionPerformed
 
+    /**
+     * Directory where temporary images are saved
+     */
     private final String TEMPDIR = "temp/";
 
+    /**
+     * Parses the image files from the given PDF and saves them as jpeg's 
+     * to the temp directory
+     * @param fileName Path to file
+     */
     private void parsePDF(String fileName) {
         String out = "pdf";
         try {
@@ -562,6 +644,10 @@ public class Main extends javax.swing.JFrame {
         cleanTempImages(out.split("\n"));
     }
 
+    /**
+     * Deletes given images on successful exit of program
+     * @param images String Array of image paths
+     */
     private void cleanTempImages(String[] images) {
         for (int i = 1; i < images.length; i++) {
             File f = new File(images[i]);
@@ -574,8 +660,8 @@ public class Main extends javax.swing.JFrame {
      */
     public static void main(String args[]) {
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code">
+        //Sets LAF to the System's default
         try {
-            // Set System L&F
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (UnsupportedLookAndFeelException ex) {
             ex.printStackTrace();
@@ -623,6 +709,8 @@ public class Main extends javax.swing.JFrame {
     private javax.swing.JButton outputBrowseButton;
     private javax.swing.JTextField outputDirText;
     private javax.swing.JLabel outputLabel;
+    private javax.swing.JCheckBox outputMergeCheck;
+    private javax.swing.JLabel outputMergeLabel;
     private javax.swing.ButtonGroup outputTypeGroup;
     private javax.swing.JRadioButton pdfRadio;
     private javax.swing.JTextArea textArea;
