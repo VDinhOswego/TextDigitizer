@@ -15,6 +15,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import javax.imageio.ImageIO;
 import javax.swing.JFileChooser;
+import javax.swing.SwingWorker;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -33,6 +34,247 @@ import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
  * @author Vincent
  */
 public class Main extends javax.swing.JFrame {
+
+    /**
+     * WorkTask works in the background to prevent the GUI from freezing.
+     */
+    class WorkTask extends SwingWorker<Void, Void> {
+
+        /**
+         * Sets Progress bar and calls the corresponding method to the current
+         * outputMerge value to do the task.
+         *
+         * @return null
+         */
+        @Override
+        protected Void doInBackground() {
+            progressBar.setIndeterminate(true);
+            if (outputMerge) {
+                mergeOut();
+            } else {
+                separateOut();
+            }
+            return null;
+        }
+
+        /**
+         * Resets selected files and returns cursor and start button to the
+         * normal state.
+         */
+        @Override
+        protected void done() {
+            files = new ArrayList<String>();
+            flist = new ArrayList<File>();
+            setCursor(Cursor.getDefaultCursor());
+            textArea.setText(textArea.getText() + "Done!\n");
+            progressBar.setIndeterminate(false);
+            startButton.setEnabled(true);
+        }
+
+        /**
+         * Iterates through selected files and runs the OCR script on each.
+         * After, the output of the script is written to either a plain text or
+         * PDF file. Keeps output of selected files separate.
+         */
+        void separateOut() {
+            for (int i = 0; i < files.size(); i++) {
+                Process p;
+                String line;
+                try {
+                    if (files.get(i).startsWith("pdf")) {
+                        String[] images = files.get(i).split("\n");
+                        if (outputType.equals("Text")) {
+                            FileWriter writer = new FileWriter(outputDir
+                                    + flist.get(i).getName().substring(0,
+                                    flist.get(i).getName().lastIndexOf(".")) + ".txt", false);
+                            BufferedWriter bWriter = new BufferedWriter(writer);
+                            for (int j = 1; j < images.length; j++) {
+                                p = Runtime.getRuntime().exec(SCRIPT + images[j]);
+                                BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
+                                while ((line = r.readLine()) != null) {
+                                    bWriter.write(line);
+                                    bWriter.newLine();
+                                    textArea.setText(textArea.getText() + line + "\n");
+                                }
+                            }
+                            bWriter.close();
+                        } else if (outputType.equals("PDF")) {
+                            PDDocument document = new PDDocument();
+                            for (int j = 1; j < images.length; j++) {
+                                PDPage page = new PDPage();
+                                document.addPage(page);
+                                PDPageContentStream contentStream = new PDPageContentStream(document, page);
+                                contentStream.beginText();
+                                contentStream.setFont(PDType1Font.TIMES_ROMAN, 12);
+                                contentStream.setLeading(14.5f);
+                                contentStream.newLineAtOffset(25, 700);
+                                p = Runtime.getRuntime().exec(SCRIPT + images[j]);
+                                BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
+                                while ((line = r.readLine()) != null) {
+                                    contentStream.showText(line);
+                                    contentStream.newLine();
+                                    textArea.setText(textArea.getText() + line + "\n");
+                                }
+                                contentStream.endText();
+                                contentStream.close();
+                            }
+                            document.save(outputDir + flist.get(i).getName().substring(0,
+                                    flist.get(i).getName().lastIndexOf(".")) + ".pdf");
+                            document.close();
+                        }
+                        //cleanTempImages(images);
+                    } else if (files.get(i).startsWith("err")) {
+                        System.out.println("Error with reading pdf.");
+                        //cleanTempImages(files.get(i).split("\n"));
+                    } else {
+                        p = Runtime.getRuntime().exec(SCRIPT + files.get(i));
+                        BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
+                        if (outputType.equals("Text")) {
+                            FileWriter writer = new FileWriter(outputDir + flist.get(i).getName().substring(0,
+                                    flist.get(i).getName().lastIndexOf(".")) + ".txt", false);
+                            BufferedWriter bWriter = new BufferedWriter(writer);
+                            while ((line = r.readLine()) != null) {
+                                bWriter.write(line);
+                                bWriter.newLine();
+                                textArea.setText(textArea.getText() + line + "\n");
+                            }
+                            bWriter.close();
+                        } else if (outputType.equals("PDF")) {
+                            PDDocument document = new PDDocument();
+                            PDPage page = new PDPage();
+                            document.addPage(page);
+                            PDPageContentStream contentStream = new PDPageContentStream(document, page);
+                            contentStream.beginText();
+                            contentStream.setFont(PDType1Font.TIMES_ROMAN, 12);
+                            contentStream.setLeading(14.5f);
+                            contentStream.newLineAtOffset(25, 700);
+                            while ((line = r.readLine()) != null) {
+                                contentStream.showText(line);
+                                contentStream.newLine();
+                                textArea.setText(textArea.getText() + line + "\n");
+                            }
+                            contentStream.endText();
+                            contentStream.close();
+                            document.save(outputDir + flist.get(i).getName().substring(0,
+                                    flist.get(i).getName().lastIndexOf(".")) + ".pdf");
+                            document.close();
+                        }
+                    }
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }
+
+        /**
+         * Iterates through selected files and runs the OCR script on each.
+         * After, the output of the script is written to either a plain text or
+         * PDF file. Merges output of selected files under the first file's
+         * name.
+         */
+        void mergeOut() {
+            String outputName = outputDir + flist.get(0).getName().substring(0,
+                    flist.get(0).getName().lastIndexOf("."));
+            if (outputType.equals("Text")) {
+                for (int i = 0; i < files.size(); i++) {
+                    Process p;
+                    String line;
+                    try {
+                        if (files.get(i).startsWith("pdf")) {
+                            String[] images = files.get(i).split("\n");
+                            FileWriter writer = new FileWriter(outputName + ".txt", true);
+                            BufferedWriter bWriter = new BufferedWriter(writer);
+                            for (int j = 1; j < images.length; j++) {
+                                p = Runtime.getRuntime().exec(SCRIPT + images[j]);
+                                BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
+                                while ((line = r.readLine()) != null) {
+                                    bWriter.write(line);
+                                    bWriter.newLine();
+                                    textArea.setText(textArea.getText() + line + "\n");
+                                }
+                            }
+                            bWriter.close();
+                            //cleanTempImages(images);
+                        } else if (files.get(i).startsWith("err")) {
+                            System.out.println("Error with reading pdf.");
+                            //cleanTempImages(files.get(i).split("\n"));
+                        } else {
+                            p = Runtime.getRuntime().exec(SCRIPT + files.get(i));
+                            BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
+                            FileWriter writer = new FileWriter(outputName + ".txt", true);
+                            BufferedWriter bWriter = new BufferedWriter(writer);
+                            while ((line = r.readLine()) != null) {
+                                bWriter.write(line);
+                                bWriter.newLine();
+                                textArea.setText(textArea.getText() + line + "\n");
+                            }
+                            bWriter.close();
+                        }
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            } else if (outputType.equals("PDF")) {
+                PDDocument document = new PDDocument();
+                for (int i = 0; i < files.size(); i++) {
+                    Process p;
+                    String line;
+                    try {
+                        if (files.get(i).startsWith("pdf")) {
+                            String[] images = files.get(i).split("\n");
+                            for (int j = 1; j < images.length; j++) {
+                                PDPage page = new PDPage();
+                                document.addPage(page);
+                                PDPageContentStream contentStream = new PDPageContentStream(document, page);
+                                contentStream.beginText();
+                                contentStream.setFont(PDType1Font.TIMES_ROMAN, 12);
+                                contentStream.setLeading(14.5f);
+                                contentStream.newLineAtOffset(25, 700);
+                                p = Runtime.getRuntime().exec(SCRIPT + images[j]);
+                                BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
+                                while ((line = r.readLine()) != null) {
+                                    contentStream.showText(line);
+                                    contentStream.newLine();
+                                    textArea.setText(textArea.getText() + line + "\n");
+                                }
+                                contentStream.endText();
+                                contentStream.close();
+                            }
+                            //cleanTempImages(images);
+                        } else if (files.get(i).startsWith("err")) {
+                            System.out.println("Error with reading pdf.");
+                            //cleanTempImages(files.get(i).split("\n"));
+                        } else {
+                            p = Runtime.getRuntime().exec(SCRIPT + files.get(i));
+                            BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
+                            PDPage page = new PDPage();
+                            document.addPage(page);
+                            PDPageContentStream contentStream = new PDPageContentStream(document, page);
+                            contentStream.beginText();
+                            contentStream.setFont(PDType1Font.TIMES_ROMAN, 12);
+                            contentStream.setLeading(14.5f);
+                            contentStream.newLineAtOffset(25, 700);
+                            while ((line = r.readLine()) != null) {
+                                contentStream.showText(line);
+                                contentStream.newLine();
+                                textArea.setText(textArea.getText() + line + "\n");
+                            }
+                            contentStream.endText();
+                            contentStream.close();
+                        }
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+                try {
+                    document.save(outputName + ".pdf");
+                    document.close();
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }
+    }
 
     /**
      * Creates new form Main
@@ -74,15 +316,16 @@ public class Main extends javax.swing.JFrame {
         fileChooser1 = new javax.swing.JFileChooser();
         jScrollPane1 = new javax.swing.JScrollPane();
         textArea = new javax.swing.JTextArea();
-        StartButton = new javax.swing.JButton();
+        startButton = new javax.swing.JButton();
+        progressBar = new javax.swing.JProgressBar();
         jMenuBar1 = new javax.swing.JMenuBar();
-        File = new javax.swing.JMenu();
-        Open = new javax.swing.JMenuItem();
-        Exit = new javax.swing.JMenuItem();
-        Edit = new javax.swing.JMenu();
-        Options = new javax.swing.JMenuItem();
-        Help = new javax.swing.JMenu();
-        HelpDoc = new javax.swing.JMenuItem();
+        fileBar = new javax.swing.JMenu();
+        openItem = new javax.swing.JMenuItem();
+        exitItem = new javax.swing.JMenuItem();
+        editBar = new javax.swing.JMenu();
+        optionsItem = new javax.swing.JMenuItem();
+        helpBar = new javax.swing.JMenu();
+        helpDocItem = new javax.swing.JMenuItem();
 
         fileChooser.setAcceptAllFileFilterUsed(false);
         fileChooser.setDialogTitle("");
@@ -286,56 +529,56 @@ public class Main extends javax.swing.JFrame {
         textArea.setRows(5);
         jScrollPane1.setViewportView(textArea);
 
-        StartButton.setText("Start");
-        StartButton.addActionListener(new java.awt.event.ActionListener() {
+        startButton.setText("Start");
+        startButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                StartButtonActionPerformed(evt);
+                startButtonActionPerformed(evt);
             }
         });
 
-        File.setText("File");
+        fileBar.setText("File");
 
-        Open.setText("Open");
-        Open.addActionListener(new java.awt.event.ActionListener() {
+        openItem.setText("Open");
+        openItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                OpenActionPerformed(evt);
+                openItemActionPerformed(evt);
             }
         });
-        File.add(Open);
+        fileBar.add(openItem);
 
-        Exit.setText("Exit");
-        Exit.addActionListener(new java.awt.event.ActionListener() {
+        exitItem.setText("Exit");
+        exitItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                ExitActionPerformed(evt);
+                exitItemActionPerformed(evt);
             }
         });
-        File.add(Exit);
+        fileBar.add(exitItem);
 
-        jMenuBar1.add(File);
+        jMenuBar1.add(fileBar);
 
-        Edit.setText("Edit");
+        editBar.setText("Edit");
 
-        Options.setText("Options");
-        Options.addActionListener(new java.awt.event.ActionListener() {
+        optionsItem.setText("Options");
+        optionsItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                OptionsActionPerformed(evt);
+                optionsItemActionPerformed(evt);
             }
         });
-        Edit.add(Options);
+        editBar.add(optionsItem);
 
-        jMenuBar1.add(Edit);
+        jMenuBar1.add(editBar);
 
-        Help.setText("Help");
+        helpBar.setText("Help");
 
-        HelpDoc.setText("Help Doc");
-        HelpDoc.addActionListener(new java.awt.event.ActionListener() {
+        helpDocItem.setText("Help Doc");
+        helpDocItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                HelpDocActionPerformed(evt);
+                helpDocItemActionPerformed(evt);
             }
         });
-        Help.add(HelpDoc);
+        helpBar.add(helpDocItem);
 
-        jMenuBar1.add(Help);
+        jMenuBar1.add(helpBar);
 
         setJMenuBar(jMenuBar1);
 
@@ -348,8 +591,9 @@ public class Main extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 388, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(StartButton)))
+                        .addComponent(progressBar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(startButton)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -358,7 +602,9 @@ public class Main extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 231, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(StartButton)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(startButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(progressBar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -379,9 +625,10 @@ public class Main extends javax.swing.JFrame {
 
     /**
      * Method to open the file chooser and populate source list
+     *
      * @param evt event
      */
-    private void OpenActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_OpenActionPerformed
+    private void openItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openItemActionPerformed
         if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
             File file = fileChooser.getSelectedFile();
             String t = "";
@@ -402,6 +649,10 @@ public class Main extends javax.swing.JFrame {
                         files.add(f.getAbsolutePath());
                         flist.add(f);
                         t += f.getAbsolutePath() + "\n";
+                    } else if (f.isFile() && f.getName().toLowerCase().endsWith(".pdf")) {
+                        parsePDF(f.getAbsolutePath());
+                        flist.add(f);
+                        t += f.getAbsolutePath() + "\n";
                     }
                 }
             }
@@ -409,133 +660,46 @@ public class Main extends javax.swing.JFrame {
         } else {
             System.out.println("File access cancelled.");
         }
-    }//GEN-LAST:event_OpenActionPerformed
+    }//GEN-LAST:event_openItemActionPerformed
 
     /**
      * Closes the program
+     *
      * @param evt event
      */
-    private void ExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ExitActionPerformed
+    private void exitItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitItemActionPerformed
         System.exit(0);
-    }//GEN-LAST:event_ExitActionPerformed
+    }//GEN-LAST:event_exitItemActionPerformed
 
     /**
-     * Iterates though source list and runs the Python script on each
-     * then reads through the script's output and writes the output to a file.
+     * Checks if there are files selected and if there are then a WorkTask is
+     * created and executed
+     *
      * @param evt event
      */
-    private void StartButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_StartButtonActionPerformed
+    private void startButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startButtonActionPerformed
         if (files.isEmpty()) {
             noFile.setVisible(true);
             return;
         }
+        startButton.setEnabled(false);
         this.setCursor(new Cursor(Cursor.WAIT_CURSOR));
-        for (int i = 0; i < files.size(); i++) {
-            Process p;
-            String line;
-            try {
-                if (files.get(i).startsWith("pdf")) {
-                    String[] images = files.get(i).split("\n");
-                    if (outputType.equals("Text")) {
-                        FileWriter writer = new FileWriter(outputDir
-                                + flist.get(i).getName().substring(0,
-                                flist.get(i).getName().lastIndexOf(".")) + ".txt", true);
-                        BufferedWriter bWriter = new BufferedWriter(writer);
-                        for (int j = 1; j < images.length; j++) {
-                            p = Runtime.getRuntime().exec(SCRIPT + images[j]);
-                            BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
-                            while ((line = r.readLine()) != null) {
-                                bWriter.write(line);
-                                bWriter.newLine();
-                                textArea.setText(textArea.getText() + line + "\n");
-                            }
-                        }
-                        bWriter.close();
-                    } else if (outputType.equals("PDF")) {
-                        PDDocument document = new PDDocument();
-                        for (int j = 1; j < images.length; j++) {
-                            PDPage page = new PDPage();
-                            document.addPage(page);
-                            PDPageContentStream contentStream = new PDPageContentStream(document, page);
-                            contentStream.beginText();
-                            contentStream.setFont(PDType1Font.TIMES_ROMAN, 12);
-                            contentStream.setLeading(14.5f);
-                            contentStream.newLineAtOffset(50, 700);
-                            p = Runtime.getRuntime().exec(SCRIPT + images[j]);
-                            BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
-                            while ((line = r.readLine()) != null) {
-                                contentStream.showText(line);
-                                contentStream.newLine();
-                                textArea.setText(textArea.getText() + line + "\n");
-                            }
-                            contentStream.endText();
-                            contentStream.close();
-                        }
-                        document.save(outputDir + flist.get(i).getName().substring(0,
-                                flist.get(i).getName().lastIndexOf(".")) + ".pdf");
-                        document.close();
-                    }
-                    //cleanTempImages(images);
-                } else if (files.get(i).startsWith("err")) {
-                    System.out.println("Error with reading pdf.");
-                    //cleanTempImages(files.get(i).split("\n"));
-                } else {
-                    p = Runtime.getRuntime().exec(SCRIPT + files.get(i));
-                    BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
-                    if (outputType.equals("Text")) {
-                        FileWriter writer = new FileWriter(outputDir + flist.get(i).getName().substring(0,
-                                flist.get(i).getName().lastIndexOf(".")) + ".txt", true);
-                        BufferedWriter bWriter = new BufferedWriter(writer);
-                        while ((line = r.readLine()) != null) {
-                            bWriter.write(line);
-                            bWriter.newLine();
-                            textArea.setText(textArea.getText() + line + "\n");
-                        }
-                        bWriter.close();
-                    } else if (outputType.equals("PDF")) {
-                        PDDocument document = new PDDocument();
-                        PDPage page = new PDPage();
-                        document.addPage(page);
-                        PDPageContentStream contentStream = new PDPageContentStream(document, page);
-                        contentStream.beginText();
-                        contentStream.setFont(PDType1Font.TIMES_ROMAN, 12);
-                        contentStream.setLeading(14.5f);
-                        contentStream.newLineAtOffset(50, 700);
-                        while ((line = r.readLine()) != null) {
-                            contentStream.showText(line);
-                            contentStream.newLine();
-                            textArea.setText(textArea.getText() + line + "\n");
-                        }
-                        contentStream.endText();
-                        contentStream.close();
-                        document.save(outputDir + flist.get(i).getName().substring(0,
-                                flist.get(i).getName().lastIndexOf(".")) + ".pdf");
-                        document.close();
-                    }
-                }
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-        }
-        
-        //merge pdfs here
-        
-        files = new ArrayList<String>();
-        flist = new ArrayList<File>();
-        this.setCursor(Cursor.getDefaultCursor());
-        textArea.setText(textArea.getText() + "Done!\n");
-    }//GEN-LAST:event_StartButtonActionPerformed
+        WorkTask task = new WorkTask();
+        task.execute();
+    }//GEN-LAST:event_startButtonActionPerformed
 
     /**
      * Opens the Help window
+     *
      * @param evt event
      */
-    private void HelpDocActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_HelpDocActionPerformed
+    private void helpDocItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_helpDocItemActionPerformed
         helpBox.setVisible(true);
-    }//GEN-LAST:event_HelpDocActionPerformed
+    }//GEN-LAST:event_helpDocItemActionPerformed
 
     /**
      * Closes the Help window
+     *
      * @param evt event
      */
     private void exitDiaButActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitDiaButActionPerformed
@@ -544,6 +708,7 @@ public class Main extends javax.swing.JFrame {
 
     /**
      * Closes the no File alert
+     *
      * @param evt event
      */
     private void exitNoFileButActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitNoFileButActionPerformed
@@ -559,9 +724,10 @@ public class Main extends javax.swing.JFrame {
 
     /**
      * Opens the options window and sets the current options
+     *
      * @param evt event
      */
-    private void OptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_OptionsActionPerformed
+    private void optionsItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_optionsItemActionPerformed
         outputDirText.setText(outputDir);
         if (outputType.equals("PDF")) {
             pdfRadio.setSelected(true);
@@ -570,10 +736,11 @@ public class Main extends javax.swing.JFrame {
         }
         outputMergeCheck.setSelected(outputMerge);
         options.setVisible(true);
-    }//GEN-LAST:event_OptionsActionPerformed
+    }//GEN-LAST:event_optionsItemActionPerformed
 
     /**
      * Applies the selected options and closes the Options window
+     *
      * @param evt event
      */
     private void confirmOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_confirmOptionsActionPerformed
@@ -585,6 +752,7 @@ public class Main extends javax.swing.JFrame {
 
     /**
      * Closes the Options window discarding selected options
+     *
      * @param evt event
      */
     private void cancelOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelOptionsActionPerformed
@@ -594,6 +762,7 @@ public class Main extends javax.swing.JFrame {
     /**
      * Opens a file chooser and sets the selected Directory as the output
      * Directory
+     *
      * @param evt event
      */
     private void outputBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_outputBrowseButtonActionPerformed
@@ -610,8 +779,9 @@ public class Main extends javax.swing.JFrame {
     private final String TEMPDIR = "temp/";
 
     /**
-     * Parses the image files from the given PDF and saves them as jpeg's 
-     * to the temp directory
+     * Parses the image files from the given PDF and saves them as jpeg's to the
+     * temp directory
+     *
      * @param fileName Path to file
      */
     private void parsePDF(String fileName) {
@@ -646,6 +816,7 @@ public class Main extends javax.swing.JFrame {
 
     /**
      * Deletes given images on successful exit of program
+     *
      * @param images String Array of image paths
      */
     private void cleanTempImages(String[] images) {
@@ -683,29 +854,28 @@ public class Main extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JMenu Edit;
-    private javax.swing.JMenuItem Exit;
-    private javax.swing.JMenu File;
-    private javax.swing.JMenu Help;
-    private javax.swing.JMenuItem HelpDoc;
-    private javax.swing.JMenuItem Open;
-    private javax.swing.JMenuItem Options;
-    private javax.swing.JButton StartButton;
     private javax.swing.JButton cancelOptions;
     private javax.swing.JButton confirmOptions;
+    private javax.swing.JMenu editBar;
     private javax.swing.JButton exitDiaBut;
+    private javax.swing.JMenuItem exitItem;
     private javax.swing.JButton exitNoFileBut;
+    private javax.swing.JMenu fileBar;
     private javax.swing.JFileChooser fileChooser;
     private javax.swing.JFileChooser fileChooser1;
+    private javax.swing.JMenu helpBar;
     private javax.swing.JDialog helpBox;
     private javax.swing.JTextArea helpContent;
+    private javax.swing.JMenuItem helpDocItem;
     private javax.swing.JLabel helpHeading;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JDialog noFile;
     private javax.swing.JLabel noFileLabel;
+    private javax.swing.JMenuItem openItem;
     private javax.swing.JDialog options;
+    private javax.swing.JMenuItem optionsItem;
     private javax.swing.JButton outputBrowseButton;
     private javax.swing.JTextField outputDirText;
     private javax.swing.JLabel outputLabel;
@@ -713,6 +883,8 @@ public class Main extends javax.swing.JFrame {
     private javax.swing.JLabel outputMergeLabel;
     private javax.swing.ButtonGroup outputTypeGroup;
     private javax.swing.JRadioButton pdfRadio;
+    private javax.swing.JProgressBar progressBar;
+    private javax.swing.JButton startButton;
     private javax.swing.JTextArea textArea;
     private javax.swing.JRadioButton txtRadio;
     private javax.swing.JLabel typeLabel;

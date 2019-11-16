@@ -10,7 +10,7 @@ import getopt
 
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract'
 
-fileName = "IMG_1835.jpg"
+fileName = "IMG_1833.jpg"
 
 try:
     opts, args = getopt.getopt(sys.argv[1:], "hf:", ["file="])
@@ -24,9 +24,15 @@ for opt, arg in opts:
     elif opt in ("-f", "--file"):
         fileName = arg
 
+sharpKernel = np.array([[0,-1,0],
+                        [0,3,0],
+                        [0,-1,0]])
+
 img = cv2.imread(fileName)
 img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+img = cv2.filter2D(img, -1, sharpKernel)
 img = cv2.bilateralFilter(img,11,75,75)
+
 #img = cv2.GaussianBlur(img, (7,7), 0)
 #img = cv2.adaptiveThreshold(img,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,cv2.THRESH_BINARY,11,2)
 img = cv2.threshold(img, 0, 255, cv2.THRESH_TRUNC | cv2.THRESH_OTSU)[1]
