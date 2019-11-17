@@ -333,7 +333,8 @@ public class Main extends javax.swing.JFrame {
         fileChooser.setFileSelectionMode(javax.swing.JFileChooser.FILES_AND_DIRECTORIES);
 
         helpBox.setTitle("Help Document");
-        helpBox.setMinimumSize(new java.awt.Dimension(400, 300));
+        helpBox.setMinimumSize(new java.awt.Dimension(400, 380));
+        helpBox.setPreferredSize(new java.awt.Dimension(400, 380));
 
         exitDiaBut.setText("Ok");
         exitDiaBut.addActionListener(new java.awt.event.ActionListener() {
@@ -345,7 +346,7 @@ public class Main extends javax.swing.JFrame {
         helpContent.setEditable(false);
         helpContent.setColumns(20);
         helpContent.setRows(5);
-        helpContent.setText("Open:\n-Supported images file types are JPEG and PNG.\n-Will read a single PDF file at a time.\n-Selecting a directory will only select images inside the directory.\n-Only multiple image files (no PDF's) at the same time.\n\nOptions:\n-The ouput location can be changed by selecting \"Browse\".\n-The output can be converted to a plain text file or PDF\n\nStart:\n-Click the Start button to start the conversions.\n-\"Done!\" will appear in the text area when the procees is done.");
+        helpContent.setText("Open:\n-Supported images file types are JPEG and PNG.\n-Will read a single PDF file at a time.\n-Selecting a directory will only select images and PDF's inside \n  the directory.\n-Only multiple image files (no PDF's) at the same time.\n\nOptions:\n-The ouput location can be changed by selecting \"Browse\".\n-The output can be converted to a plain text file or PDF.\n-The output of multiple files can be merged into a single file.\n\nStart:\n-Click the Start button to start the conversions.\n-\"Done!\" will appear in the text area when the procees is done.");
         jScrollPane2.setViewportView(helpContent);
 
         helpHeading.setFont(new java.awt.Font("sansserif", 1, 18)); // NOI18N
@@ -359,11 +360,13 @@ public class Main extends javax.swing.JFrame {
             .addGroup(helpBoxLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(helpBoxLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(helpHeading, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, helpBoxLayout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(exitDiaBut))
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 388, Short.MAX_VALUE)
-                    .addComponent(helpHeading, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 388, Short.MAX_VALUE)
+                        .addContainerGap())))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, helpBoxLayout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(exitDiaBut)
                 .addContainerGap())
         );
         helpBoxLayout.setVerticalGroup(
@@ -372,7 +375,7 @@ public class Main extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(helpHeading, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 233, Short.MAX_VALUE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 265, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(exitDiaBut)
                 .addContainerGap())
