@@ -11,7 +11,7 @@ External Dependencies (needs to be installed manually):
 
 -Java 8+
 
--Python 3.6+
+-Python 3.4+
 
 -opencv
 

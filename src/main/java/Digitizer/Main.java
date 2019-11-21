@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.SwingWorker;
 import javax.swing.UIManager;
@@ -333,6 +334,7 @@ public class Main extends javax.swing.JFrame {
         fileChooser.setFileSelectionMode(javax.swing.JFileChooser.FILES_AND_DIRECTORIES);
 
         helpBox.setTitle("Help Document");
+        helpBox.setIconImage(new ImageIcon("td.jpg").getImage());
         helpBox.setMinimumSize(new java.awt.Dimension(400, 380));
         helpBox.setPreferredSize(new java.awt.Dimension(400, 380));
 
@@ -382,6 +384,7 @@ public class Main extends javax.swing.JFrame {
         );
 
         noFile.setTitle("No Filles Selected");
+        noFile.setIconImage(new ImageIcon("td.jpg").getImage());
         noFile.setMinimumSize(new java.awt.Dimension(400, 180));
 
         exitNoFileBut.setText("ok");
@@ -419,6 +422,7 @@ public class Main extends javax.swing.JFrame {
         );
 
         options.setTitle("Options");
+        options.setIconImage(new ImageIcon("td.jpg").getImage());
         options.setMinimumSize(new java.awt.Dimension(400, 190));
 
         outputLabel.setFont(new java.awt.Font("sansserif", 1, 12)); // NOI18N
@@ -526,6 +530,7 @@ public class Main extends javax.swing.JFrame {
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Text Digitizer");
         setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+        setIconImage(new ImageIcon("td.jpg").getImage());
 
         textArea.setEditable(false);
         textArea.setColumns(20);
