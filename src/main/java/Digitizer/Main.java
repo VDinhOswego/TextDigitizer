@@ -67,7 +67,7 @@ public class Main extends javax.swing.JFrame {
             files = new ArrayList<String>();
             flist = new ArrayList<File>();
             setCursor(Cursor.getDefaultCursor());
-            textArea.setText(textArea.getText() + "Done!\n");
+            textArea.setText(textArea.getText() + "\nDone!\n");
             progressBar.setIndeterminate(false);
             startButton.setEnabled(true);
         }
@@ -95,7 +95,7 @@ public class Main extends javax.swing.JFrame {
                                 while ((line = r.readLine()) != null) {
                                     bWriter.write(line);
                                     bWriter.newLine();
-                                    textArea.setText(textArea.getText() + line + "\n");
+                                    //textArea.setText(textArea.getText() + line + "\n");
                                 }
                             }
                             bWriter.close();
@@ -114,7 +114,7 @@ public class Main extends javax.swing.JFrame {
                                 while ((line = r.readLine()) != null) {
                                     contentStream.showText(line);
                                     contentStream.newLine();
-                                    textArea.setText(textArea.getText() + line + "\n");
+                                    //textArea.setText(textArea.getText() + line + "\n");
                                 }
                                 contentStream.endText();
                                 contentStream.close();
@@ -137,7 +137,7 @@ public class Main extends javax.swing.JFrame {
                             while ((line = r.readLine()) != null) {
                                 bWriter.write(line);
                                 bWriter.newLine();
-                                textArea.setText(textArea.getText() + line + "\n");
+                                //textArea.setText(textArea.getText() + line + "\n");
                             }
                             bWriter.close();
                         } else if (outputType.equals("PDF")) {
@@ -152,7 +152,7 @@ public class Main extends javax.swing.JFrame {
                             while ((line = r.readLine()) != null) {
                                 contentStream.showText(line);
                                 contentStream.newLine();
-                                textArea.setText(textArea.getText() + line + "\n");
+                                //textArea.setText(textArea.getText() + line + "\n");
                             }
                             contentStream.endText();
                             contentStream.close();
@@ -191,7 +191,7 @@ public class Main extends javax.swing.JFrame {
                                 while ((line = r.readLine()) != null) {
                                     bWriter.write(line);
                                     bWriter.newLine();
-                                    textArea.setText(textArea.getText() + line + "\n");
+                                    //textArea.setText(textArea.getText() + line + "\n");
                                 }
                             }
                             bWriter.close();
@@ -207,7 +207,7 @@ public class Main extends javax.swing.JFrame {
                             while ((line = r.readLine()) != null) {
                                 bWriter.write(line);
                                 bWriter.newLine();
-                                textArea.setText(textArea.getText() + line + "\n");
+                                //textArea.setText(textArea.getText() + line + "\n");
                             }
                             bWriter.close();
                         }
@@ -236,7 +236,7 @@ public class Main extends javax.swing.JFrame {
                                 while ((line = r.readLine()) != null) {
                                     contentStream.showText(line);
                                     contentStream.newLine();
-                                    textArea.setText(textArea.getText() + line + "\n");
+                                    //textArea.setText(textArea.getText() + line + "\n");
                                 }
                                 contentStream.endText();
                                 contentStream.close();
@@ -258,7 +258,7 @@ public class Main extends javax.swing.JFrame {
                             while ((line = r.readLine()) != null) {
                                 contentStream.showText(line);
                                 contentStream.newLine();
-                                textArea.setText(textArea.getText() + line + "\n");
+                                //textArea.setText(textArea.getText() + line + "\n");
                             }
                             contentStream.endText();
                             contentStream.close();

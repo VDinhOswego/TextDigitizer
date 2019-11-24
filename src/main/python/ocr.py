@@ -7,10 +7,12 @@ except ImportError:
 import pytesseract
 import sys
 import getopt
+import os
 
-pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract'
+if os.name == "nt":
+    pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract'
 
-fileName = "IMG_1833.jpg"
+fileName = "test.jpg"
 
 try:
     opts, args = getopt.getopt(sys.argv[1:], "hf:", ["file="])
