@@ -14,6 +14,12 @@ if (!hasProperty('mainClass')) {
     ext.mainClass = 'Digitizer.Main'
 }
 
+jar {
+    manifest {
+        attributes 'Main-Class': 'Digitizer.Main'
+    }
+}
+
 repositories {
     mavenCentral()
     // You may define additional repositories, or even remove "mavenCentral()".
@@ -22,7 +28,6 @@ repositories {
 }
 
 dependencies {
-    // TODO: Add dependencies here ...
     // You can read more about how to add dependency here:
     //   http://www.gradle.org/docs/current/userguide/dependency_management.html#sec:how_to_declare_your_dependencies
     testCompile group: 'junit', name: 'junit', version: '4.10'
