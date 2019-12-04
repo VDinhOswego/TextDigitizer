@@ -18,6 +18,10 @@ jar {
     manifest {
         attributes 'Main-Class': 'Digitizer.Main'
     }
+    
+    from {
+        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+    }
 }
 
 repositories {
